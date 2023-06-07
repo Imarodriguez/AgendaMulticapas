@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Multicapas</title>
+</head>
+<body>
+
+        
+        <style>
+            body {
+              font-family: 'Comfortaa', sans-serif;
+              background-color: #a0c6ef;
+            }
+        
+            h1, h2 {
+              color: olive;
+            }
+        
+            table {
+              border-collapse: collapse;
+              width: 100%;
+              background-color: #a0c6ef;
+              margin-bottom: 20px;
+            }
+        
+            th, td {
+              padding: 8px;
+              text-align: left;
+              border-bottom: 1px solid #ddd;
+            }
+        
+            label {
+              color: olive;
+              font-weight: bold;
+            }
+        
+            input[type="text"] {
+              font-family: 'Comfortaa', sans-serif;
+              color: rgb(227, 188, 255);
+            }
+        
+            button[type="submit"] {
+              background-color: olive;
+              color: rgb(163, 218, 218);
+              padding: 8px 16px;
+              border: none;
+              cursor: pointer;
+              font-family: 'Comfortaa', sans-serif;
+            }
+          </style>
+          <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Comfortaa">
+        </head>
+          <body>
+            <h1>Agenda Web</h1>
+    
+            <h2>Agregar nuevo contacto</h2>
+            <form id="add-contact-form">
+              <label for="nombre">Nombre:</label>
+              <input type="text" id="nombre" required><br>
+              
+          
+              <label for="apellido">Apellido:</label>
+              <input type="text" id="apellido" required><br>
+          
+              <label for="telefono">Teléfono:</label>
+              <input type="text" id="telefono" required><br>
+          
+              <button type="submit">Agregar</button>
+            </form>
+          
+            <h2>Listado de contactos</h2>
+            <label for="search">Buscar por nombre o apellido:</label>
+            <input type="text" id="search" onkeyup="searchContacts()" placeholder="Ingrese nombre o apellido"><br>
+            <table id="contact-table">
+              <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Teléfono</th>
+              </tr>
+            </table>
+          
+            <script>
+              let contactData = []; // Almacenar los datos de contacto originales
+    
+              // Obtener el listado de contactos al cargar la página
+              fetch('http://www.raydelto.org/agenda.php')
+                .then(response => response.json())
+                .then(data => {
+                  contactData = data; // Almacenar los datos de contacto originales en la variable contactData
+                  displayContacts(contactData); // Mostrar todos los contactos al cargar la página
+                });
+    
+              // Agregar nuevo contacto al enviar el formulario
+              const addContactForm = document.getElementById('add-contact-form');
+              addContactForm.addEventListener('submit', event => {
+                event.preventDefault();
+                const nombre = document.getElementById('nombre').value;
+                const apellido = document.getElementById('apellido').value;
+                const telefono = document.getElementById('telefono').value;
+          
+                const newContact = { nombre, apellido, telefono };
+          
+                // Agregar el nuevo contacto al array de contactos
+            contactData.push(newContact);
+            addContactForm.reset();
+
+                fetch('http://www.raydelto.org/agenda.php', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(newContact)
+                })
+                .then(response => response.json())
+                .then(data => {
+                  // Agregar el nuevo contacto a la tabla
+              
+                  displayContacts(contactData); // Mostrar todos los contactos actualizados
+          
+                  // Limpiar el formulario
+                  
+                });
+              });
+    
+              // Función para mostrar los contactos en la tabla
+              function displayContacts(contacts) {
+                const contactTable = document.getElementById('contact-table');
+                contactTable.innerHTML = ''; // Limpiar la tabla antes de mostrar los contactos
+          
+                contacts.forEach(contact => {
+                  const row = document.createElement('tr');
+                  row.innerHTML = `
+                    <td>${contact.nombre}</td>
+                    <td>${contact.apellido}</td>
+                    <td>${contact.telefono}</td>
+                  `;
+                  contactTable.appendChild(row);
+                });
+              }
+    
+              // Función para buscar contactos por nombre o apellido
+              function searchContacts() {
+                const searchTerm = document.getElementById('search').value.toLowerCase();
+                const filteredContacts = contactData.filter(contact =>
+                  contact.nombre.toLowerCase().includes(searchTerm) ||
+                  contact.apellido.toLowerCase().includes(searchTerm)
+                );
+    
+                displayContacts(filteredContacts); // Mostrar los contactos filtrados en la tabla
+              }
+            </script>
+          
+    </body>
+    </html>
